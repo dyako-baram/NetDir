@@ -25,7 +25,6 @@ namespace NetDir.Pages
         {
             if (PathQuery != null)
             {
-                ViewData["Title"] = PathQuery + " Folder";
                 if (PathList.Contains(PathQuery))
                 {
                     var li = PathList.RemoveAll(x => x.StartsWith(PathQuery));
