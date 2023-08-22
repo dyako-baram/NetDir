@@ -23,6 +23,7 @@ namespace NetDir.Pages
         public string? BreadCrumb { get; set; }
         public void OnGet()
         {
+            LogClient();
             if (PathQuery != null)
             {
                 if (PathList.Contains(PathQuery))
@@ -55,49 +56,36 @@ namespace NetDir.Pages
                 if (file.Length > 0)
                 {
                     if (path==null)
-                    {
                         filePath = Path.Combine(_basePath, file.FileName);
-                    }else
-                    {
+                    else
                         filePath = Path.Combine(_basePath, path, file.FileName);
-                    }
                     
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await file.CopyToAsync(stream);
                     }
+                    LogFileCreation(file,filePath);
                 }
             }
             if (path == null)
-            {
                 return RedirectToPage("Index");
-            }
             else
-            {
                 return RedirectToPage("Index", new { PathQuery = path });
-            }
         }
         public IActionResult OnPostCreareFolder(string text, string? path)
         {
             string filePath;
             if (path == null)
-            {
                 filePath = Path.Combine(_basePath, text);
-            }
             else
-            {
                 filePath = Path.Combine(_basePath, path, text);
-            }
 
+            LogFolderCreation(text, filePath);
             Directory.CreateDirectory(filePath);
             if (path == null)
-            {
                 return RedirectToPage("Index");
-            }
             else
-            {
                 return RedirectToPage("Index", new { PathQuery = path });
-            }
         }
         public void ListDirectory(string? pathArg)
         {
@@ -163,7 +151,54 @@ namespace NetDir.Pages
             string[] parts = input.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
             return parts.Length > 0 ? parts[parts.Length - 1] : string.Empty;
         }
-
+        private  void LogClient()
+        {
+            var client = HttpContext.Connection;
+            var request=HttpContext.Request;
+            var clientInfo = new StringBuilder()
+                .AppendLine("Client Info")
+                .AppendLine("*****************")
+                .AppendLine($"Time: {DateTime.Now}")
+                .AppendLine($"IP: {client.RemoteIpAddress}:{client.RemotePort}")
+               .AppendLine($"Method: {request.Method}")
+               .AppendLine($"Referrer: {request.Headers["Referer"]}")
+               .AppendLine($"Protocol: {request.Protocol}")
+               .AppendLine($"QueryString: {request.QueryString}")
+               .AppendLine($"Folder Path: {Uri.UnescapeDataString(request.QueryString.ToString().Replace("?PathQuery=","\\"))}")
+               .AppendLine($"User Agent: {request.Headers["User-Agent"]}")
+               .AppendLine("*****************");
+            _logger.LogInformation(clientInfo.ToString());
+        }
+        private void LogFileCreation(IFormFile file,string path)
+        {
+            var client = HttpContext.Connection;
+            var fileInfo = new StringBuilder()
+                .AppendLine("File Creation Info")
+                .AppendLine("*****************")
+                .AppendLine($"Time: {DateTime.Now}")
+                .AppendLine($"From Ip: {client.RemoteIpAddress}:{client.RemotePort}")
+                .AppendLine($"Name: {file.FileName}")
+                .AppendLine($"Content Type: {file.ContentType}")
+                .AppendLine($"Method: {HttpContext.Request.Method}")
+                .AppendLine($"Length: {file.Length}")
+                .AppendLine($"ContentDisposition: {file.ContentDisposition}")
+                .AppendLine($"Folder Path: {path}")
+                .AppendLine("*****************");
+            _logger.LogInformation(fileInfo.ToString());
+        }
+        private void LogFolderCreation(string folderName,string path)
+        {
+            var client = HttpContext.Connection;
+            var folderInfo = new StringBuilder()
+                .AppendLine("Folder Creation Info")
+                .AppendLine("*****************")
+                .AppendLine($"Time: {DateTime.Now}")
+                .AppendLine($"From Ip: {client.RemoteIpAddress}:{client.RemotePort}")
+                .AppendLine($"Name: {folderName}")
+                .AppendLine($"Method: {HttpContext.Request.Method}")
+                .AppendLine($"Folder Path: {path}")
+                .AppendLine("*****************");
+            _logger.LogInformation(folderInfo.ToString());
+        }
     }
-
 }
