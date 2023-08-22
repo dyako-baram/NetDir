@@ -1,0 +1,134 @@
+﻿@page
+@using NetDir
+@namespace NetDir.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    Layout = "_Layout";
+}
+
+@model IndexModel
+<nav aria-label="breadcrumb" style="--bs-breadcrumb-divider: '>';" >
+    Path
+  <ol class="breadcrumb">
+    @foreach (var item in @Model.PathList)
+    {
+        <li class="breadcrumb-item">
+            @if(item=="/")
+            {
+                <a asp-page="Index">@Model.CleanPathName(item)</a>
+            }
+            else
+            {
+                <a asp-page="Index" asp-route-PathQuery="@item" asp-route-BreadCrumb="@item">@Model.CleanPathName(item)</a>
+            }
+        </li>
+    }
+  </ol>
+</nav>
+<div class="col-2">
+    <h1>Folders:</h1>
+    <ul>
+        @foreach (var item in Model.List["Folder"])
+        {
+            <li>
+                @if(string.IsNullOrWhiteSpace(Model.PathBaseRelative))
+                {
+                    <a asp-page="Index" asp-route-PathQuery="@item">@item</a>
+                }
+                else
+                {
+                    <a asp-page="Index" asp-route-PathQuery="@Model.PathBaseRelative\@item">@item</a>
+                }
+            </li>
+        }
+    </ul>
+</div>
+<div class="col">
+    
+    
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="UploadModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Upload file to the host</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-page="index" enctype="multipart/form-data" method="post">
+                    <div class="modal-body">
+                        <input type="file" name="files" multiple />
+                        <input type="hidden" name="path" value="@Model.PathQuery">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @* create folder *@
+    <div class="modal fade" id="CreateFolderModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Create folder on the host</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form asp-page="index" method="post">
+                    <div class="modal-body">
+                        <label for="">Folder Name</label>
+                        <input type="text" name="text" />
+                        <input type="hidden" name="path" value="@Model.PathQuery">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary" asp-page-handler="CreareFolder">Create Folder</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <h1>Files:</h1>
+    <ul >
+        @foreach (var item in Model.List["FileText"])
+        {
+            <li>
+                <a href="@Model.PathQuery\@item">@item</a> | <a href="@Model.PathQuery\@item" download>Download</a>
+            </li>
+        }
+    </ul>
+    <div class="row">
+        @foreach (var item in Model.List["FileImg"])
+        {
+            <div class="card m-2" style="width: 18rem;">
+                <a href="@item">
+                    <img src="@Model.PathQuery\@item" class="card-img-top">
+                </a>
+                <div class="card-body">
+                    <p class="card-text">@item</p>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <div class="row">
+    @foreach (var item in Model.List["FileVideo"])
+    {
+            <div class="card m-2" style="width: 18rem;">
+                <a href="@item">
+                    <video class="w-100"  controls>
+                        <source src="@Model.PathQuery\@item">
+                        Your browser does not support the video tag.
+                    </video>
+                </a>
+                <div class="card-body">
+                    <p class="card-text">@item</p>
+                </div>
+            </div>
+
+    }
+    </div>
+</div>
+
