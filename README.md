@@ -1,5 +1,5 @@
 # NetDir
-A local website listing files and folders from the executables path
+A local website listing files and folders from the executable's path
 
 Made With ASP Core :)
 # showcase
@@ -8,7 +8,7 @@ Made With ASP Core :)
 
 
 # download Links
-<a href="github.com/dyako-baram/NetDir/releases/download/release/NetDir.exe">downlaod With runtime included</a>
+<a href="https://github.com/dyako-baram/NetDir/releases/download/latest/NetDir.exe">downlaod With runtime included</a>
 # how to Build This App?
 Note: dotnet version 7 or above is required 
 - download/clone this project
