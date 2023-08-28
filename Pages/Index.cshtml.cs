@@ -15,6 +15,8 @@ namespace NetDir.Pages
         {
             _logger = logger;
         }
+        private List<string> _folders=Paths.Folders;
+        private List<string> _files=Paths.Files;
         public Dictionary<string, List<string>> List;
         [BindProperty(SupportsGet = true)]
         public string? PathQuery { get; set; } = null;
@@ -48,23 +50,28 @@ namespace NetDir.Pages
 
             ListDirectory(PathQuery);
         }
-        public async Task<IActionResult> OnPostAsync(List<IFormFile> files,string path)
+        public async Task<IActionResult> OnPostAsync(List<IFormFile> files, string path)
         {
             string filePath;
             foreach (var file in files)
             {
                 if (file.Length > 0)
                 {
-                    if (path==null)
-                        filePath = Path.Combine(_basePath, file.FileName);
+                    var newFileName = file.FileName;
+                    if (_files.Any(x => x == file.FileName))
+                    {
+                        newFileName = Guid.NewGuid().ToString().Substring(0, 4)+ " " + file.FileName  ;
+                    }
+                    if (path == null)
+                        filePath = Path.Combine(_basePath, newFileName);
                     else
-                        filePath = Path.Combine(_basePath, path, file.FileName);
-                    
+                        filePath = Path.Combine(_basePath, path, newFileName);
+
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await file.CopyToAsync(stream);
                     }
-                    LogFileCreation(file,filePath);
+                    LogFileCreation(file, filePath);
                 }
             }
             if (path == null)
@@ -74,6 +81,12 @@ namespace NetDir.Pages
         }
         public IActionResult OnPostCreareFolder(string text, string? path)
         {
+            var a = _folders;
+            if (_folders.Any(x => x == text))
+            {
+                text = text + " " + Guid.NewGuid().ToString().Substring(0, 4);
+            }
+
             string filePath;
             if (path == null)
                 filePath = Path.Combine(_basePath, text);
@@ -105,10 +118,12 @@ namespace NetDir.Pages
             var directory = new DirectoryInfo(path);
             foreach (var dir in directory.GetDirectories())
             {
+                _folders.Add(dir.Name);
                 List["Folder"].Add(dir.Name);
             }
             foreach (var file in directory.GetFiles())
             {
+                _files.Add(file.Name);
                 if (IsForImg(file.Name))
                 {
                     List["FileImg"].Add(file.Name);
@@ -151,10 +166,10 @@ namespace NetDir.Pages
             string[] parts = input.Split(new[] { '\\' }, StringSplitOptions.RemoveEmptyEntries);
             return parts.Length > 0 ? parts[parts.Length - 1] : string.Empty;
         }
-        private  void LogClient()
+        private void LogClient()
         {
             var client = HttpContext.Connection;
-            var request=HttpContext.Request;
+            var request = HttpContext.Request;
             var clientInfo = new StringBuilder()
                 .AppendLine("Client Info")
                 .AppendLine("*****************")
@@ -164,12 +179,12 @@ namespace NetDir.Pages
                .AppendLine($"Referrer: {request.Headers["Referer"]}")
                .AppendLine($"Protocol: {request.Protocol}")
                .AppendLine($"QueryString: {request.QueryString}")
-               .AppendLine($"Folder Path: {Uri.UnescapeDataString(request.QueryString.ToString().Replace("?PathQuery=","\\"))}")
+               .AppendLine($"Folder Path: {Uri.UnescapeDataString(request.QueryString.ToString().Replace("?PathQuery=", "\\"))}")
                .AppendLine($"User Agent: {request.Headers["User-Agent"]}")
                .AppendLine("*****************");
             _logger.LogInformation(clientInfo.ToString());
         }
-        private void LogFileCreation(IFormFile file,string path)
+        private void LogFileCreation(IFormFile file, string path)
         {
             var client = HttpContext.Connection;
             var fileInfo = new StringBuilder()
@@ -186,7 +201,7 @@ namespace NetDir.Pages
                 .AppendLine("*****************");
             _logger.LogInformation(fileInfo.ToString());
         }
-        private void LogFolderCreation(string folderName,string path)
+        private void LogFolderCreation(string folderName, string path)
         {
             var client = HttpContext.Connection;
             var folderInfo = new StringBuilder()
