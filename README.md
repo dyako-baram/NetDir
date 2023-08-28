@@ -3,9 +3,9 @@ A local website listing files and folders from the executables path
 
 Made With ASP Core :)
 # showcase
-<video width="320" height="240" controls>
-  <source src="github/NetDir Showcase.mp4" type="video/mp4">
-</video>
+
+<a href="https://github.com/dyako-baram/NetDir/blob/master/github/NetDir%20Showcase.mp4">watch it here</a>
+
 
 # download Links
 <a href="github.com/dyako-baram/NetDir/releases/download/release/NetDir.exe">downlaod With runtime included</a>
